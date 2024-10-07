@@ -5,8 +5,11 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import digital.metro.pricing.calculator.exception.PriceNotFoundException;
 
 @Component
 public class BasketCalculatorService {
@@ -16,6 +19,10 @@ public class BasketCalculatorService {
     @Autowired
     public BasketCalculatorService(PriceRepository priceRepository) {
         this.priceRepository = priceRepository;
+    }
+
+    public BigDecimal getArticlePrice(String articleId, String customerId) {
+        return calculateArticlePrice(new BasketEntry(articleId, BigDecimal.ONE), customerId);
     }
 
     public BasketCalculationResult calculateBasket(Basket basket) {
@@ -40,6 +47,9 @@ public class BasketCalculatorService {
             }
         }
         BigDecimal listPrice = priceRepository.getPriceByArticleId(articleId);
+        if (Objects.isNull(listPrice)) {
+            throw new PriceNotFoundException("Price not found for article: " + articleId);
+        }
 
         return listPrice.multiply(be.getQuantity());
     }
