@@ -9,7 +9,7 @@ public class BasketCalculationResult {
     private Map<String, BigDecimal> pricedBasketEntries;
     private BigDecimal totalAmount;
 
-    public BasketCalculationResult() {
+    private BasketCalculationResult() {
     }
 
     public BasketCalculationResult(String customerId, Map<String, BigDecimal> pricedBasketEntries, BigDecimal totalAmount) {
