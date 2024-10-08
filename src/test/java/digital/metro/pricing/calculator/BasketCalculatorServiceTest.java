@@ -32,7 +32,7 @@ public class BasketCalculatorServiceTest {
         // GIVEN
         String articleId = "article-1";
         BigDecimal price = new BigDecimal("34.29");
-        Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(price);
+        Mockito.when(mockPriceRepository.getpricebyarticleId(articleId)).thenReturn(price);
 
         // WHEN
         BigDecimal result = service.getArticlePrice(articleId);
@@ -45,7 +45,7 @@ public class BasketCalculatorServiceTest {
     public void testGetArticlePriceNotFound() {
         // GIVEN
         String articleId = "article-1";
-        Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(null);
+        Mockito.when(mockPriceRepository.getpricebyarticleId(articleId)).thenReturn(null);
 
         // THEN
         Assertions.assertThatThrownBy(() -> {
@@ -75,7 +75,7 @@ public class BasketCalculatorServiceTest {
         String customerId = "customer-1";
         BigDecimal price = new BigDecimal("34.29");
         Mockito.when(mockPriceRepository.getPriceByArticleIdAndCustomerId(articleId, customerId)).thenReturn(null);
-        Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(price);
+        Mockito.when(mockPriceRepository.getpricebyarticleId(articleId)).thenReturn(price);
 
         // WHEN
         BigDecimal result = service.getArticlePriceForCustomer(articleId, customerId);
@@ -91,7 +91,7 @@ public class BasketCalculatorServiceTest {
         BigDecimal price = new BigDecimal("34.29");
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal expectedPrice = new BigDecimal("68.58");
-        Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(price);
+        Mockito.when(mockPriceRepository.getpricebyarticleId(articleId)).thenReturn(price);
 
         // WHEN
         BigDecimal result = service.calculateArticlePrice(new BasketEntry(articleId, quantity), null);
@@ -108,7 +108,7 @@ public class BasketCalculatorServiceTest {
         BigDecimal customerPrice = new BigDecimal("29.99");
         String customerId = "customer-1";
 
-        Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(standardPrice);
+        Mockito.when(mockPriceRepository.getpricebyarticleId(articleId)).thenReturn(standardPrice);
         Mockito.when(mockPriceRepository.getPriceByArticleIdAndCustomerId(articleId, customerId)).thenReturn(customerPrice);
 
         // WHEN
@@ -131,9 +131,9 @@ public class BasketCalculatorServiceTest {
                 "article-2", new BigDecimal("0.29"),
                 "article-3", new BigDecimal("9.99"));
 
-        Mockito.when(mockPriceRepository.getPriceByArticleId("article-1")).thenReturn(prices.get("article-1"));
-        Mockito.when(mockPriceRepository.getPriceByArticleId("article-2")).thenReturn(prices.get("article-2"));
-        Mockito.when(mockPriceRepository.getPriceByArticleId("article-3")).thenReturn(prices.get("article-3"));
+        Mockito.when(mockPriceRepository.getpricebyarticleId("article-1")).thenReturn(prices.get("article-1"));
+        Mockito.when(mockPriceRepository.getpricebyarticleId("article-2")).thenReturn(prices.get("article-2"));
+        Mockito.when(mockPriceRepository.getpricebyarticleId("article-3")).thenReturn(prices.get("article-3"));
 
         // WHEN
         BasketCalculationResult result = service.calculateBasket(basket);
@@ -157,9 +157,9 @@ public class BasketCalculatorServiceTest {
                 "article-2", new BigDecimal("0.29"),
                 "article-3", new BigDecimal("10"));
 
-        Mockito.when(mockPriceRepository.getPriceByArticleId("article-1")).thenReturn(prices.get("article-1"));
-        Mockito.when(mockPriceRepository.getPriceByArticleId("article-2")).thenReturn(prices.get("article-2"));
-        Mockito.when(mockPriceRepository.getPriceByArticleId("article-3")).thenReturn(prices.get("article-3"));
+        Mockito.when(mockPriceRepository.getpricebyarticleId("article-1")).thenReturn(prices.get("article-1"));
+        Mockito.when(mockPriceRepository.getpricebyarticleId("article-2")).thenReturn(prices.get("article-2"));
+        Mockito.when(mockPriceRepository.getpricebyarticleId("article-3")).thenReturn(prices.get("article-3"));
 
         Mockito.when(mockPriceRepository.getPriceByArticleIdAndCustomerId("article-3", "customer-1")).thenReturn((new BigDecimal(9)));
 
@@ -190,9 +190,9 @@ public class BasketCalculatorServiceTest {
                 "article-1", new BigDecimal("1.50"),
                 "article-2", new BigDecimal("0.29"));
 
-        Mockito.when(mockPriceRepository.getPriceByArticleId("article-1")).thenReturn(prices.get("article-1"));
-        Mockito.when(mockPriceRepository.getPriceByArticleId("article-2")).thenReturn(prices.get("article-2"));
-        Mockito.when(mockPriceRepository.getPriceByArticleId("article-3")).thenReturn(prices.get("article-3"));
+        Mockito.when(mockPriceRepository.getpricebyarticleId("article-1")).thenReturn(prices.get("article-1"));
+        Mockito.when(mockPriceRepository.getpricebyarticleId("article-2")).thenReturn(prices.get("article-2"));
+        Mockito.when(mockPriceRepository.getpricebyarticleId("article-3")).thenReturn(prices.get("article-3"));
 
         // THEN
         Assertions.assertThatThrownBy(() -> {

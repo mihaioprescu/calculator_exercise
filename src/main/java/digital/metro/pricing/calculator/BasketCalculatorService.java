@@ -21,7 +21,7 @@ public class BasketCalculatorService {
     }
 
     public BigDecimal getArticlePrice(String articleId) {
-        BigDecimal listPrice = priceRepository.getPriceByArticleId(articleId);
+        BigDecimal listPrice = priceRepository.getpricebyarticleId(articleId);
         if (Objects.isNull(listPrice)) {
             throw new PriceNotFoundException(articleId);
         }
