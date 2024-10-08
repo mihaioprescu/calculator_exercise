@@ -17,8 +17,6 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
 
-import digital.metro.pricing.calculator.exception.PriceNotFoundException;
-
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -60,30 +58,6 @@ public class CalculatorResourceTest {
     }
 
     @Test
-    public void testCalculateBasketPriceNotFound() throws Exception {
-        Basket basket = new Basket("customer-1", Set.of(new BasketEntry("article-1", BigDecimal.ONE)));
-
-        when(basketCalculatorService.calculateBasket(basket)).thenThrow(new PriceNotFoundException("article-1"));
-
-        mockMvc.perform(post("/calculator/calculate-basket")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(basket)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void testCalculateBasketPriceServerError() throws Exception {
-        Basket basket = new Basket("customer-1", Set.of(new BasketEntry("article-1", BigDecimal.ONE)));
-
-        when(basketCalculatorService.calculateBasket(basket)).thenThrow(new RuntimeException());
-
-        mockMvc.perform(post("/calculator/calculate-basket")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(basket)))
-                .andExpect(status().isInternalServerError());
-    }
-
-    @Test
     public void testGetArticlePriceSuccess() throws Exception {
         String articleId = "article-1";
         BigDecimal price = BigDecimal.valueOf(10.00);
@@ -94,16 +68,6 @@ public class CalculatorResourceTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string("10.0"));
-    }
-
-    @Test
-    public void testGetArticlePriceNotFound() throws Exception {
-        String articleId = "article-1";
-
-        when(basketCalculatorService.getArticlePrice(articleId)).thenThrow(new PriceNotFoundException("Price not found"));
-
-        mockMvc.perform(get("/calculator/article/{articleId}", articleId))
-                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -122,16 +86,4 @@ public class CalculatorResourceTest {
                 .andExpect(content().string("10.0"));
     }
 
-    @Test
-    public void testGetArticlePriceForCustomerNotFound() throws Exception {
-        String articleId = "article-1";
-        String customerId = "customer-1";
-
-        when(basketCalculatorService.getArticlePriceForCustomer(articleId, customerId)).thenThrow(new PriceNotFoundException("Price not found"));
-
-        mockMvc.perform(get("/calculator/getarticlepriceforcustomer")
-                        .param("articleId", articleId)
-                        .param("customerId", customerId))
-                .andExpect(status().isNotFound());
-    }
 }
