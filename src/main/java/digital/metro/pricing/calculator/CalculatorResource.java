@@ -1,12 +1,24 @@
 package digital.metro.pricing.calculator;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.websocket.server.PathParam;
 import java.math.BigDecimal;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+
 @RestController
+@RequestMapping("/calculator")
+@Validated
 public class CalculatorResource {
 
     private BasketCalculatorService basketCalculatorService;
@@ -16,18 +28,23 @@ public class CalculatorResource {
         this.basketCalculatorService = basketCalculatorService;
     }
 
-    @PostMapping("/calculator/calculate-basket")
-    public BasketCalculationResult calculateBasket(@RequestBody Basket basket) {
-        return basketCalculatorService.calculateBasket(basket);
+    @PostMapping("/calculate-basket")
+    public ResponseEntity<BasketCalculationResult> calculateBasket(@Valid @RequestBody Basket basket) {
+        BasketCalculationResult result = basketCalculatorService.calculateBasket(basket);
+        return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/calculator/article/{articleId}")
-    public BigDecimal getArticlePrice(@PathVariable String articleId) {
-        return basketCalculatorService.calculateArticle(new BasketEntry(articleId, BigDecimal.ONE), null);
+    @GetMapping("/article/{articleId}")
+    public ResponseEntity<BigDecimal> getArticlePrice(
+            @PathVariable @NotBlank String articleId) {
+        BigDecimal price = basketCalculatorService.getArticlePrice(articleId);
+        return ResponseEntity.ok(price);
     }
 
-    @GetMapping("/calculator/getarticlepriceforcustomer")
-    public BigDecimal getArticlePriceForCustomer(@RequestParam String articleId, @RequestParam String customerId) {
-        return basketCalculatorService.calculateArticle(new BasketEntry(articleId, BigDecimal.ONE), customerId);
+    @GetMapping("/getarticlepriceforcustomer")
+    public ResponseEntity<BigDecimal> getArticlePriceForCustomer(@RequestParam String articleId, @RequestParam String customerId) {
+        BigDecimal price = basketCalculatorService.getArticlePriceForCustomer(articleId, customerId);
+        return ResponseEntity.ok(price);
     }
+
 }

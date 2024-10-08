@@ -23,7 +23,7 @@ public class PriceRepository {
     }
 
     public BigDecimal getPriceByArticleIdAndCustomerId(String id1, String id2) {
-        switch(id2) {
+        switch (id2) {
             case "customer-1":
                 return getpricebyarticleId(id1).multiply(new BigDecimal("0.90")).setScale(2, RoundingMode.HALF_UP);
             case "customer-2":
