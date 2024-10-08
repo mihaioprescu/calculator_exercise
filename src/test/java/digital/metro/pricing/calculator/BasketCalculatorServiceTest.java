@@ -9,7 +9,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import digital.metro.pricing.calculator.exception.PriceNotFoundException;
@@ -27,8 +26,66 @@ public class BasketCalculatorServiceTest {
         service = new BasketCalculatorService(mockPriceRepository);
     }
 
+
     @Test
-    public void testCalculateArticle() {
+    public void testGetArticlePrice() {
+        // GIVEN
+        String articleId = "article-1";
+        BigDecimal price = new BigDecimal("34.29");
+        Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(price);
+
+        // WHEN
+        BigDecimal result = service.getArticlePrice(articleId);
+
+        // THEN
+        Assertions.assertThat(result).isEqualByComparingTo(price);
+    }
+
+    @Test
+    public void testGetArticlePriceNotFound() {
+        // GIVEN
+        String articleId = "article-1";
+        Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(null);
+
+        // THEN
+        Assertions.assertThatThrownBy(() -> {
+            service.getArticlePrice(articleId);
+        }).isInstanceOf(PriceNotFoundException.class);
+    }
+
+    @Test
+    public void testGetArticlePriceForCustomer() {
+        // GIVEN
+        String articleId = "article-1";
+        String customerId = "customer-1";
+        BigDecimal price = new BigDecimal("34.29");
+        Mockito.when(mockPriceRepository.getPriceByArticleIdAndCustomerId(articleId, customerId)).thenReturn(price);
+
+        // WHEN
+        BigDecimal result = service.getArticlePriceForCustomer(articleId, customerId);
+
+        // THEN
+        Assertions.assertThat(result).isEqualByComparingTo(price);
+    }
+
+    @Test
+    public void testGetArticlePriceForCustomerNotFound() {
+        // GIVEN
+        String articleId = "article-1";
+        String customerId = "customer-1";
+        BigDecimal price = new BigDecimal("34.29");
+        Mockito.when(mockPriceRepository.getPriceByArticleIdAndCustomerId(articleId, customerId)).thenReturn(null);
+        Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(price);
+
+        // WHEN
+        BigDecimal result = service.getArticlePriceForCustomer(articleId, customerId);
+
+        // THEN
+        Assertions.assertThat(result).isEqualByComparingTo(price);
+    }
+
+    @Test
+    public void testCalculateArticlePrice() {
         // GIVEN
         String articleId = "article-1";
         BigDecimal price = new BigDecimal("34.29");
@@ -44,7 +101,7 @@ public class BasketCalculatorServiceTest {
     }
 
     @Test
-    public void testCalculateArticleForCustomer() {
+    public void testCalculateArticlePriceForCustomer() {
         // GIVEN
         String articleId = "article-1";
         BigDecimal standardPrice = new BigDecimal("34.29");
@@ -52,28 +109,13 @@ public class BasketCalculatorServiceTest {
         String customerId = "customer-1";
 
         Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(standardPrice);
-        Mockito.when(mockPriceRepository.getPriceByArticleIdAndCustomerId(articleId, customerId)).thenReturn(Optional.of(customerPrice));
+        Mockito.when(mockPriceRepository.getPriceByArticleIdAndCustomerId(articleId, customerId)).thenReturn(customerPrice);
 
         // WHEN
         BigDecimal result = service.calculateArticlePrice(new BasketEntry(articleId, BigDecimal.ONE), "customer-1");
 
         // THEN
         Assertions.assertThat(result).isEqualByComparingTo(customerPrice);
-    }
-
-    @Test
-    public void testCalculateArticleNotFound() {
-        // GIVEN
-        String articleId = "article-1";
-        Mockito.when(mockPriceRepository.getPriceByArticleId(articleId)).thenReturn(null);
-
-        // WHEN
-        BasketEntry be = new BasketEntry(articleId, BigDecimal.ONE);
-
-        // THEN
-        Assertions.assertThatThrownBy(() -> {
-            service.calculateArticlePrice(be, null);
-        }).isInstanceOf(PriceNotFoundException.class);
     }
 
     @Test
@@ -119,7 +161,7 @@ public class BasketCalculatorServiceTest {
         Mockito.when(mockPriceRepository.getPriceByArticleId("article-2")).thenReturn(prices.get("article-2"));
         Mockito.when(mockPriceRepository.getPriceByArticleId("article-3")).thenReturn(prices.get("article-3"));
 
-        Mockito.when(mockPriceRepository.getPriceByArticleIdAndCustomerId("article-3", "customer-1")).thenReturn(Optional.of(new BigDecimal(9)));
+        Mockito.when(mockPriceRepository.getPriceByArticleIdAndCustomerId("article-3", "customer-1")).thenReturn((new BigDecimal(9)));
 
         // WHEN
         BasketCalculationResult result = service.calculateBasket(basket);
@@ -134,5 +176,27 @@ public class BasketCalculatorServiceTest {
         Assertions.assertThat(result.getCustomerId()).isEqualTo("customer-1");
         Assertions.assertThat(result.getPricedBasketEntries()).isEqualTo(expectedPrices);
         Assertions.assertThat(result.getTotalAmount()).isEqualByComparingTo(new BigDecimal("30.29"));
+    }
+
+    @Test
+    public void testCalculateBasketPriceNotFound() {
+        // GIVEN
+        Basket basket = new Basket("customer-1", Set.of(
+                new BasketEntry("article-1", BigDecimal.ONE),
+                new BasketEntry("article-2", BigDecimal.ONE),
+                new BasketEntry("article-3", BigDecimal.ONE)));
+
+        Map<String, BigDecimal> prices = Map.of(
+                "article-1", new BigDecimal("1.50"),
+                "article-2", new BigDecimal("0.29"));
+
+        Mockito.when(mockPriceRepository.getPriceByArticleId("article-1")).thenReturn(prices.get("article-1"));
+        Mockito.when(mockPriceRepository.getPriceByArticleId("article-2")).thenReturn(prices.get("article-2"));
+        Mockito.when(mockPriceRepository.getPriceByArticleId("article-3")).thenReturn(prices.get("article-3"));
+
+        // THEN
+        Assertions.assertThatThrownBy(() -> {
+            service.calculateBasket(basket);
+        }).isInstanceOf(PriceNotFoundException.class);
     }
 }

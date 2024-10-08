@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
 /**
@@ -25,10 +24,9 @@ public class PriceRepository {
         return prices.computeIfAbsent(articleId, key -> randomPrice());
     }
 
-    public Optional<BigDecimal> getPriceByArticleIdAndCustomerId(String articleId, String customerId) {
+    public BigDecimal getPriceByArticleIdAndCustomerId(String articleId, String customerId) {
         BigDecimal listPrice = getPriceByArticleId(articleId);
-        BigDecimal discountedPrice = getCustomerPrice(listPrice, customerId);
-        return Optional.ofNullable(discountedPrice);
+        return getCustomerPrice(listPrice, customerId);
     }
 
     private BigDecimal getCustomerPrice(BigDecimal price, String customerId) {

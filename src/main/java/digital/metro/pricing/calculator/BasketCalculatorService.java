@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import digital.metro.pricing.calculator.exception.PriceNotFoundException;
@@ -21,8 +20,20 @@ public class BasketCalculatorService {
         this.priceRepository = priceRepository;
     }
 
-    public BigDecimal getArticlePrice(String articleId, String customerId) {
-        return calculateArticlePrice(new BasketEntry(articleId, BigDecimal.ONE), customerId);
+    public BigDecimal getArticlePrice(String articleId) {
+        BigDecimal listPrice = priceRepository.getPriceByArticleId(articleId);
+        if (Objects.isNull(listPrice)) {
+            throw new PriceNotFoundException(articleId);
+        }
+        return listPrice;
+    }
+
+    public BigDecimal getArticlePriceForCustomer(String articleId, String customerId) {
+        BigDecimal customerPrice = priceRepository.getPriceByArticleIdAndCustomerId(articleId, customerId);
+        if (Objects.nonNull(customerPrice)) {
+            return customerPrice;
+        }
+        return getArticlePrice(articleId);
     }
 
     public BasketCalculationResult calculateBasket(Basket basket) {
@@ -40,17 +51,13 @@ public class BasketCalculatorService {
     public BigDecimal calculateArticlePrice(BasketEntry be, String customerId) {
         String articleId = be.getArticleId();
 
-        if (customerId != null) {
-            Optional<BigDecimal> customerPrice = priceRepository.getPriceByArticleIdAndCustomerId(articleId, customerId);
-            if (customerPrice.isPresent()) {
-                return customerPrice.get().multiply(be.getQuantity());
+        if (Objects.nonNull(customerId)) {
+            BigDecimal customerPrice = priceRepository.getPriceByArticleIdAndCustomerId(articleId, customerId);
+            if (Objects.nonNull(customerPrice)) {
+                return customerPrice.multiply(be.getQuantity());
             }
         }
-        BigDecimal listPrice = priceRepository.getPriceByArticleId(articleId);
-        if (Objects.isNull(listPrice)) {
-            throw new PriceNotFoundException("Price not found for article: " + articleId);
-        }
 
-        return listPrice.multiply(be.getQuantity());
+        return getArticlePrice(articleId).multiply(be.getQuantity());
     }
 }

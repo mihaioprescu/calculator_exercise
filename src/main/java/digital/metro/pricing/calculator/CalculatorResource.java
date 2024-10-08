@@ -41,12 +41,23 @@ public class CalculatorResource {
         }
     }
 
-    @GetMapping("/article/{articleId}/price")
+    @GetMapping("/article/{articleId}")
     public ResponseEntity<BigDecimal> getArticlePrice(
-            @PathVariable @NotBlank String articleId,
-            @RequestParam(required = false) String customerId) {
+            @PathVariable @NotBlank String articleId) {
         try {
-            BigDecimal price = basketCalculatorService.getArticlePrice(articleId, customerId);
+            BigDecimal price = basketCalculatorService.getArticlePrice(articleId);
+            return ResponseEntity.ok(price);
+        } catch (PriceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/getarticlepriceforcustomer")
+    public ResponseEntity<BigDecimal> getArticlePriceForCustomer(@RequestParam String articleId, @RequestParam String customerId) {
+        try {
+            BigDecimal price = basketCalculatorService.getArticlePriceForCustomer(articleId, customerId);
             return ResponseEntity.ok(price);
         } catch (PriceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);

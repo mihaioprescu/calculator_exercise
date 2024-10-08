@@ -35,7 +35,8 @@ public class Basket {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Basket basket)) return false;
+        if (!(o instanceof Basket)) return false;
+        Basket basket = (Basket) o;
         return Objects.equals(customerId, basket.customerId) &&
                 Objects.equals(entries, basket.entries);
     }

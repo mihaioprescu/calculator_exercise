@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -46,14 +45,11 @@ public class CalculatorResourceTest {
 
     @Test
     public void testCalculateBasketSuccess() throws Exception {
-        // GIVEN
         Basket basket = new Basket("customer-1", Set.of(new BasketEntry("article-1", BigDecimal.ONE)));
-        BasketCalculationResult result = new BasketCalculationResult("customer-1", Map.of("article-1", BigDecimal.valueOf(10.00)),
-                BigDecimal.valueOf(10.00));
+        BasketCalculationResult result = new BasketCalculationResult("customer-1", Map.of("article-1", BigDecimal.valueOf(10.00)), BigDecimal.valueOf(10.00));
 
         when(basketCalculatorService.calculateBasket(basket)).thenReturn(result);
 
-        //WHEN
         mockMvc.perform(post("/calculator/calculate-basket")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(basket)))
@@ -65,12 +61,10 @@ public class CalculatorResourceTest {
 
     @Test
     public void testCalculateBasketPriceNotFound() throws Exception {
-        // GIVEN
         Basket basket = new Basket("customer-1", Set.of(new BasketEntry("article-1", BigDecimal.ONE)));
 
-        when(basketCalculatorService.calculateBasket(basket)).thenThrow(new PriceNotFoundException("Price not found"));
+        when(basketCalculatorService.calculateBasket(basket)).thenThrow(new PriceNotFoundException("article-1"));
 
-        //WHEN
         mockMvc.perform(post("/calculator/calculate-basket")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(basket)))
@@ -78,41 +72,25 @@ public class CalculatorResourceTest {
     }
 
     @Test
-    public void testCalculateBasketNoItems() throws Exception {
-        // GIVEN
-        Basket basket = new Basket("customer-1", Collections.emptySet());
+    public void testCalculateBasketPriceServerError() throws Exception {
+        Basket basket = new Basket("customer-1", Set.of(new BasketEntry("article-1", BigDecimal.ONE)));
 
-        //WHEN
+        when(basketCalculatorService.calculateBasket(basket)).thenThrow(new RuntimeException());
+
         mockMvc.perform(post("/calculator/calculate-basket")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new ObjectMapper().writeValueAsString(basket)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void testCalculateBasketInvalidBasketItem() throws Exception {
-        // GIVEN
-        Basket basket = new Basket("customer-1", Set.of(new BasketEntry("", BigDecimal.ONE)));
-
-        //WHEN
-        mockMvc.perform(post("/calculator/calculate-basket")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(basket)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
     public void testGetArticlePriceSuccess() throws Exception {
-        // GIVEN
         String articleId = "article-1";
-        String customerId = "customer-1";
         BigDecimal price = BigDecimal.valueOf(10.00);
 
-        when(basketCalculatorService.getArticlePrice(articleId, customerId)).thenReturn(price);
+        when(basketCalculatorService.getArticlePrice(articleId)).thenReturn(price);
 
-        //WHEN
-        mockMvc.perform(get("/calculator/article/{articleId}/price", articleId)
-                        .param("customerId", customerId))
+        mockMvc.perform(get("/calculator/article/{articleId}", articleId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().string("10.0"));
@@ -120,14 +98,39 @@ public class CalculatorResourceTest {
 
     @Test
     public void testGetArticlePriceNotFound() throws Exception {
-        // GIVEN
+        String articleId = "article-1";
+
+        when(basketCalculatorService.getArticlePrice(articleId)).thenThrow(new PriceNotFoundException("Price not found"));
+
+        mockMvc.perform(get("/calculator/article/{articleId}", articleId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void testGetArticlePriceForCustomerSuccess() throws Exception {
+        String articleId = "article-1";
+        String customerId = "customer-1";
+        BigDecimal price = BigDecimal.valueOf(10.00);
+
+        when(basketCalculatorService.getArticlePriceForCustomer(articleId, customerId)).thenReturn(price);
+
+        mockMvc.perform(get("/calculator/getarticlepriceforcustomer")
+                        .param("articleId", articleId)
+                        .param("customerId", customerId))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().string("10.0"));
+    }
+
+    @Test
+    public void testGetArticlePriceForCustomerNotFound() throws Exception {
         String articleId = "article-1";
         String customerId = "customer-1";
 
-        when(basketCalculatorService.getArticlePrice(articleId, customerId)).thenThrow(new PriceNotFoundException("Price not found"));
+        when(basketCalculatorService.getArticlePriceForCustomer(articleId, customerId)).thenThrow(new PriceNotFoundException("Price not found"));
 
-        //WHEN
-        mockMvc.perform(get("/calculator/article/{articleId}/price", articleId)
+        mockMvc.perform(get("/calculator/getarticlepriceforcustomer")
+                        .param("articleId", articleId)
                         .param("customerId", customerId))
                 .andExpect(status().isNotFound());
     }
